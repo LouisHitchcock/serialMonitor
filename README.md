@@ -1,4 +1,4 @@
-# Serial Monitor
+# serialMonitor
 
 A lightweight serial monitor with color-coded output and non-exclusive port access.
 
