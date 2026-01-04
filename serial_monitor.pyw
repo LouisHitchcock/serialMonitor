@@ -6,6 +6,8 @@ import threading
 import time
 from datetime import datetime
 import re
+import os
+import sys
 
 
 class SerialMonitor:
@@ -13,6 +15,9 @@ class SerialMonitor:
         self.root = root
         self.root.title("Serial Monitor")
         self.root.geometry("900x600")
+        
+        # Set window icon
+        self.set_icon()
         
         self.serial_port = None
         self.running = False
@@ -45,6 +50,24 @@ class SerialMonitor:
         # Start port monitoring thread
         self.monitor_thread = threading.Thread(target=self.monitor_ports, daemon=True)
         self.monitor_thread.start()
+    
+    def set_icon(self):
+        """Set window icon from icon.ico file"""
+        try:
+            # Try to find icon.ico in the same directory as the script
+            if getattr(sys, 'frozen', False):
+                # Running as compiled executable
+                app_dir = sys._MEIPASS
+            else:
+                # Running as script
+                app_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            icon_path = os.path.join(app_dir, 'icon.ico')
+            if os.path.exists(icon_path):
+                self.root.iconbitmap(icon_path)
+        except Exception as e:
+            # If icon loading fails, continue without it
+            pass
         
     def setup_ui(self):
         # Top control panel

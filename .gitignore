@@ -20,3 +20,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Generated icon
+icon.ico

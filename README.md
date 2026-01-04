@@ -19,15 +19,23 @@ A lightweight serial monitor with color-coded output and non-exclusive port acce
 
 ## Installation
 
+### Option 1: Download EXE (Recommended)
+
+Download `SerialMonitor.exe` from the [Releases](https://github.com/LouisHitchcock/serialMonitor/releases) page.
+
+No Python installation needed!
+
+### Option 2: Run from Source
+
 1. Install Python 3.6 or higher
 2. Install dependencies:
    ```
-   pip install -r requirements.txt
+   pip install pyserial
    ```
-
-## Usage
-
-Run the serial monitor:
+3. Run:
+   ```
+   python serialMonitor.pyw
+   ```
 ```
 python serial_monitor.py
 ```

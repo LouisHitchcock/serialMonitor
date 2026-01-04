@@ -1,1 +1,5 @@
 pyserial==3.5
+
+# For building EXE (development only)
+pyinstaller>=6.0.0
+Pillow>=10.0.0
