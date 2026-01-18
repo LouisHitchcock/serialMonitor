@@ -7,6 +7,8 @@ A lightweight serial monitor with color-coded output and non-exclusive port acce
 - **COM Port Selection**: Dropdown list of available COM ports with auto-detection
 - **Configurable Baud Rate**: Support for common baud rates (9600 to 921600)
 - **Timestamp Toggle**: Optional timestamps for each received line
+- **Autoscroll Toggle**: Enable/disable automatic scrolling to view message history
+- **Autoconnect**: Automatically reconnects to previously connected devices when replugged
 - **Color-Coded Output**: Automatic color highlighting for:
   - `ERROR` - Red
   - `WARNING` - Orange

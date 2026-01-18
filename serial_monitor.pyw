@@ -22,6 +22,10 @@ class SerialMonitor:
         self.serial_port = None
         self.running = False
         self.show_timestamp = tk.BooleanVar(value=False)
+        self.autoscroll = tk.BooleanVar(value=True)
+        self.autoconnect = tk.BooleanVar(value=False)
+        self.last_connected_port = None
+        self.last_baud_rate = None
         
         # Color patterns - prefix: color
         # Lines starting with these prefixes will be colored
@@ -92,8 +96,8 @@ class SerialMonitor:
         self.connect_btn = ttk.Button(control_frame, text="Connect", command=self.toggle_connection)
         self.connect_btn.pack(side=tk.LEFT, padx=5)
         
-        # Timestamp toggle
-        ttk.Checkbutton(control_frame, text="Timestamp", variable=self.show_timestamp).pack(side=tk.LEFT, padx=5)
+        # Autoconnect toggle
+        ttk.Checkbutton(control_frame, text="Autoconnect", variable=self.autoconnect).pack(side=tk.LEFT, padx=5)
         
         # Clear button
         ttk.Button(control_frame, text="Clear", command=self.clear_output).pack(side=tk.LEFT, padx=5)
@@ -131,9 +135,18 @@ class SerialMonitor:
         self.output_text.tag_config('gray', foreground='#9e9e9e')
         self.output_text.tag_config('timestamp', foreground='#888888')
         
-        # Status bar
-        self.status_label = ttk.Label(self.root, text="Disconnected", relief=tk.SUNKEN, anchor=tk.W)
-        self.status_label.pack(fill=tk.X, side=tk.BOTTOM, padx=5, pady=2)
+        # Status bar with toggles
+        status_frame = ttk.Frame(self.root, relief=tk.SUNKEN)
+        status_frame.pack(fill=tk.X, side=tk.BOTTOM, padx=5, pady=2)
+        
+        self.status_label = ttk.Label(status_frame, text="Disconnected", anchor=tk.W)
+        self.status_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        # Timestamp toggle (right side of footer)
+        ttk.Checkbutton(status_frame, text="Timestamp", variable=self.show_timestamp).pack(side=tk.RIGHT, padx=5)
+        
+        # Autoscroll toggle (right side of footer)
+        ttk.Checkbutton(status_frame, text="Autoscroll", variable=self.autoscroll).pack(side=tk.RIGHT, padx=5)
         
     def refresh_ports(self, highlight_new=None):
         """Refresh the list of available COM ports"""
@@ -188,6 +201,10 @@ class SerialMonitor:
             self.connect_btn.config(text="Disconnect")
             self.status_label.config(text=f"Connected to {port_name} @ {baud_rate} baud")
             
+            # Save last connected port and baud rate for autoconnect
+            self.last_connected_port = port_name
+            self.last_baud_rate = baud_rate
+            
             # Start reading thread
             self.read_thread = threading.Thread(target=self.read_serial, daemon=True)
             self.read_thread.start()
@@ -219,7 +236,6 @@ class SerialMonitor:
                     
             except serial.SerialException:
                 self.root.after(0, self.disconnect)
-                self.root.after(0, messagebox.showerror, "Error", "Serial connection lost")
                 break
             except Exception as e:
                 print(f"Error reading serial: {e}")
@@ -247,8 +263,9 @@ class SerialMonitor:
             else:
                 self.output_text.insert(tk.END, line + '\n')
             
-            # Auto-scroll to bottom
-            self.output_text.see(tk.END)
+            # Auto-scroll to bottom if enabled
+            if self.autoscroll.get():
+                self.output_text.see(tk.END)
         
         self.root.after(0, update_ui)
         
@@ -320,13 +337,25 @@ class SerialMonitor:
         # Refresh and highlight the new port
         self.refresh_ports(highlight_new=port_name)
         
-        # Update status to show connection
-        self.status_label.config(text=f"New device connected: {port_name}")
-        
-        # Flash the combobox briefly to draw attention
-        original_bg = self.port_combo.cget('background')
-        self.port_combo.configure(background='#4caf50')  # Green highlight
-        self.root.after(500, lambda: self.port_combo.configure(background=original_bg))
+        # Check if autoconnect is enabled and this is the last connected port
+        if self.autoconnect.get() and self.last_connected_port == port_name and not self.running:
+            # Restore the baud rate if saved
+            if self.last_baud_rate:
+                baud_values = self.baud_combo['values']
+                if str(self.last_baud_rate) in baud_values:
+                    self.baud_combo.set(str(self.last_baud_rate))
+            
+            # Auto-connect to the device
+            self.connect()
+            self.status_label.config(text=f"Auto-connected to {port_name}")
+        else:
+            # Update status to show connection
+            self.status_label.config(text=f"New device connected: {port_name}")
+            
+            # Flash the combobox briefly to draw attention
+            original_bg = self.port_combo.cget('background')
+            self.port_combo.configure(background='#4caf50')  # Green highlight
+            self.root.after(500, lambda: self.port_combo.configure(background=original_bg))
     
     def on_port_disconnected(self, port_name):
         """Handle port disconnection"""
@@ -337,7 +366,7 @@ class SerialMonitor:
         if self.serial_port and self.serial_port.is_open:
             if self.serial_port.port == port_name:
                 self.disconnect()
-                self.status_label.config(text=f"Device disconnected: {port_name}")
+                self.status_label.config(text=f"({port_name}) Device Disconnected")
     
     def show_help(self):
         """Show help dialog with color settings and info"""
@@ -444,7 +473,7 @@ class SerialMonitor:
         notebook.add(about_frame, text="About")
         
         ttk.Label(about_frame, text="Serial Monitor", font=('Arial', 16, 'bold')).pack(pady=(10, 5))
-        ttk.Label(about_frame, text="v1.0", font=('Arial', 10)).pack(pady=(0, 20))
+        ttk.Label(about_frame, text="v1.1.0", font=('Arial', 10)).pack(pady=(0, 20))
         
         about_text = """A lightweight serial port monitor with:
         

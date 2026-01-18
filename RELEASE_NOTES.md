@@ -1,4 +1,4 @@
-# Serial Monitor v1.0.0
+# Serial Monitor v1.1.0
 
 A lightweight, feature-rich serial port monitor for Windows.
 
@@ -20,7 +20,8 @@ A lightweight, feature-rich serial port monitor for Windows.
 - **Save Logs** - Export logs to timestamped text files
 - **Copy to Clipboard** - Copy all output with one click
 - **Clear Display** - Quick clear button for fresh monitoring
-- **Auto-scroll** - Automatically scrolls to show latest data
+- **Toggle Autoscroll** - Enable/disable auto-scrolling to review message history
+- **Autoconnect** - Automatically reconnects to previously connected devices when replugged
 
 ### Help System
 - **Built-in Help** - Comprehensive help with color coding examples
@@ -43,6 +44,13 @@ Requires Python 3.6+
 pip install pyserial
 python serial_monitor.pyw
 ```
+
+## What's New in v1.1.0
+
+- **Toggle Autoscroll**: New checkbox to enable/disable automatic scrolling, allowing you to review message history
+- **Autoconnect Feature**: Automatically reconnects to your previously connected device when it's replugged
+- **Improved Disconnection Handling**: Removed popup alert on disconnection; status now shown in footer only
+- **Better User Experience**: No more intrusive popups interrupting your workflow
 
 ## What's New in v1.0.0
 
